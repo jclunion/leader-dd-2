@@ -1,4 +1,5 @@
 # LEADER DD-2 - Vintage 12-Bit Digital Delay Emulation
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Welcome to **LEADER DD-2**, a premium, production-ready VST3/AU audio plugin built with C++ and the JUCE 7+ framework. This plugin is a high-fidelity physical and mathematical emulation of the legendary **Boss DD-2** compact digital delay pedal released in 1983—the world's first compact digital delay stompbox.
 
