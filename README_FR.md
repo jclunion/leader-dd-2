@@ -1,4 +1,5 @@
 # LEADER DD-2 - Émulation de Délai Numérique Vintage 12 bits
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Bienvenue dans le projet **LEADER DD-2**, un plugin audio VST3/AU de qualité professionnelle, prêt pour la production, développé en C++ avec le framework JUCE 7+. Ce plugin est une émulation physique et mathématique de haute fidélité de la légendaire pédale de retard numérique compacte **Boss DD-2** sortie en 1983 — la toute première pédale de delay numérique au format compact au monde.
 
