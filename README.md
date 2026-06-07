@@ -5,7 +5,7 @@ Welcome to **LEADER DD-2**, a premium, production-ready VST3/AU audio plugin bui
 
 To avoid trademark infringements while preserving the iconic 1980s aesthetic, the plugin is legally rebranded under the name **LEADER**, an authentic tribute to vintage Japanese high-end test equipment and synthesizer engineering from the golden age of electronics.
 
-![LEADER DD-2 Interface](https://i.imgur.com/EaLWhSB.png)
+![LEADER DD-2 Interface](https://i.imgur.com/zYXvBCd.png)
 
 ---
 

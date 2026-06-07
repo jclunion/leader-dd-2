@@ -5,7 +5,7 @@ Bienvenue dans le projet **LEADER DD-2**, un plugin audio VST3/AU de qualité pr
 
 Pour des raisons de respect des marques déposées et de droits d'auteur tout en préservant l'esthétique mythique des années 80, le plugin a été rebaptisé sous le nom de marque **LEADER**, un hommage authentique à l'ingénierie et au design rétro des appareils de mesure et synthétiseurs japonais de l'âge d'or de l'électronique.
 
-![Interface LEADER DD-2](https://i.imgur.com/EaLWhSB.png)
+![Interface LEADER DD-2](https://i.imgur.com/zYXvBCd.png)
 
 ---
 

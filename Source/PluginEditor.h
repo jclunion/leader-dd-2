@@ -4,7 +4,7 @@
     PluginEditor.h
     Created: 30 May 2026
     Author: LUNION jean-Claude
-    Description: Interface graphique vintage style pédale Boss DD-2.
+    Description: Interface graphique vintage style pédale Boss DD-2 (Rebrand Leader DD-2).
                  Contient le LookAndFeel personnalisé et l'animation de la LED.
 
   ==============================================================================
@@ -15,27 +15,32 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-// --- LookAndFeel Personnalisé pour l'esthétique Boss Stompbox ---
-class BossLookAndFeel : public juce::LookAndFeel_V4
+// --- LookAndFeel Personnalisé pour l'esthétique Leader Stompbox ---
+class LeaderLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-    BossLookAndFeel();
-    ~BossLookAndFeel() override = default;
+    LeaderLookAndFeel();
+    ~LeaderLookAndFeel() override = default;
 
     /**
-     * @brief Dessine un potentiomètre rotatif cylindrique vintage Boss DD-2.
+     * @brief Dessine un potentiomètre rotatif cylindrique vintage Boss / Leader.
      */
     void drawRotarySlider (juce::Graphics& g, int x, int y, int width, int height,
                            float sliderPosProportional, float rotaryStartAngle,
                            float rotaryEndAngle, juce::Slider& slider) override;
 
     /**
-     * @brief Personnalise le rendu des menus déroulants et boutons si nécessaire.
+     * @brief Personnalise le rendu des arrière-plans des boutons si nécessaire.
      */
     void drawButtonBackground (juce::Graphics& g, juce::Button& button,
                                const juce::Colour& backgroundColour,
                                bool shouldDrawButtonAsHighlighted,
                                bool shouldDrawButtonAsDown) override;
+
+    /**
+     * @brief Personnalise la police d'écriture des TextButton.
+     */
+    juce::Font getTextButtonFont (juce::TextButton&, int buttonHeight) override;
 };
 
 // --- Éditeur Audio principal du Plugin ---
@@ -57,7 +62,7 @@ private:
     DD2AudioProcessor& audioProcessor;
 
     // --- Style Visuel global ---
-    BossLookAndFeel bossLookAndFeel;
+    LeaderLookAndFeel leaderLookAndFeel;
 
     // --- Éléments de l'interface ---
     juce::Slider elevelSlider;

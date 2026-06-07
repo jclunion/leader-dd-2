@@ -4,7 +4,7 @@
     PluginEditor.cpp
     Created: 30 May 2026
     Author: LUNION jean-Claude
-    Description: Implémentation de l'interface graphique pour le Boss DD-2.
+    Description: Implémentation de l'interface graphique pour le Leader DD-2.
 
   ==============================================================================
 */
@@ -13,18 +13,18 @@
 #include "PluginEditor.h"
 
 // ==============================================================================
-// --- Implémentation du LookAndFeel DD2 ---
+// --- Implémentation du LookAndFeel Leader ---
 // ==============================================================================
-BossLookAndFeel::BossLookAndFeel()
+LeaderLookAndFeel::LeaderLookAndFeel()
 {
     // Définir des couleurs globales par défaut
     setColour (juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
     setColour (juce::Slider::textBoxTextColourId, juce::Colours::white);
 }
 
-void BossLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int width, int height,
-                                       float sliderPosProportional, float rotaryStartAngle,
-                                       float rotaryEndAngle, juce::Slider& slider)
+void LeaderLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int width, int height,
+                                         float sliderPosProportional, float rotaryStartAngle,
+                                         float rotaryEndAngle, juce::Slider& slider)
 {
     juce::ignoreUnused (slider);
 
@@ -36,6 +36,10 @@ void BossLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int wid
     juce::Colour greyBody = juce::Colour (0xFF2F2F33);
     juce::Colour greyBodyDark = juce::Colour (0xFF141416);
     
+    // Ombre portée sous le bouton
+    g.setColour (juce::Colour (0x99000000));
+    g.fillEllipse (cx - radius + 1.0f, cy - radius + 2.0f, radius * 2.0f, radius * 2.0f);
+
     g.setGradientFill (juce::ColourGradient::vertical (greyBody, cy - radius, greyBodyDark, cy + radius));
     g.fillEllipse (cx - radius, cy - radius, radius * 2.0f, radius * 2.0f);
 
@@ -44,19 +48,19 @@ void BossLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int wid
     g.drawEllipse (cx - radius, cy - radius, radius * 2.0f, radius * 2.0f, 1.8f);
 
     // --- 2. Capuchon central en aluminium brossé ---
-    float capRadius = radius * 0.50f;
-    juce::Colour capLight = juce::Colour (0xFFECECEC);
-    juce::Colour capDark = juce::Colour (0xFF959599);
+    float capRadius = radius * 0.52f;
+    juce::Colour capLight = juce::Colour (0xFFFDFDFD);
+    juce::Colour capDark = juce::Colour (0xFF99999C);
     
     // Gradient linéaire incliné pour émuler le reflet de l'aluminium brossé
-    g.setGradientFill (juce::ColourGradient (capLight, cx - capRadius * 0.5f, cy - capRadius * 0.5f,
+    g.setGradientFill (juce::ColourGradient (capLight, cx - capRadius * 0.6f, cy - capRadius * 0.6f,
                                                capDark, cx + capRadius * 0.8f, cy + capRadius * 0.8f, false));
     g.fillEllipse (cx - capRadius, cy - capRadius, capRadius * 2.0f, capRadius * 2.0f);
 
     // Fine rainure interne sur le capuchon
-    g.setColour (juce::Colour (0x44FFFFFF));
+    g.setColour (juce::Colour (0x33FFFFFF));
     g.drawEllipse (cx - capRadius * 0.8f, cy - capRadius * 0.8f, capRadius * 1.6f, capRadius * 1.6f, 0.8f);
-    g.setColour (juce::Colour (0x33000000));
+    g.setColour (juce::Colour (0x55000000));
     g.drawEllipse (cx - capRadius, cy - capRadius, capRadius * 2.0f, capRadius * 2.0f, 0.5f);
 
     // --- 3. Ligne d'indication blanche (Indicateur de position) ---
@@ -72,14 +76,148 @@ void BossLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int wid
     g.drawLine (rx1, ry1, rx2, ry2, 2.5f);
 }
 
-void BossLookAndFeel::drawButtonBackground (juce::Graphics& g, juce::Button& button,
-                                           const juce::Colour& backgroundColour,
-                                           bool shouldDrawButtonAsHighlighted,
-                                           bool shouldDrawButtonAsDown)
+void LeaderLookAndFeel::drawButtonBackground (juce::Graphics& g, juce::Button& button,
+                                             const juce::Colour& backgroundColour,
+                                             bool shouldDrawButtonAsHighlighted,
+                                             bool shouldDrawButtonAsDown)
 {
-    // Le bouton physique HOLD est dessiné de manière transparente.
-    // Toute l'esthétique du footswitch est prise en charge dans le DD2AudioProcessorEditor::paint().
-    juce::ignoreUnused (g, button, backgroundColour, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
+    juce::ignoreUnused (backgroundColour);
+
+    if (button.getName() == "Footswitch")
+    {
+        // Rendu interactif du Commutateur de pied (Footswitch)
+        bool isDown = shouldDrawButtonAsDown || button.getToggleState();
+        
+        // Décalage visuel en pixel pour un enfoncement 3D saisissant
+        float offset = isDown ? 3.0f : 0.0f;
+
+        // Rectangle de base dans les coordonnées locales du bouton
+        float w = static_cast<float> (button.getWidth());
+        float h = static_cast<float> (button.getHeight());
+
+        // Fond métallique sombre sous le footswitch
+        g.setColour (juce::Colour (0xFF162130));
+        g.fillRoundedRectangle (0.0f, 0.0f, w, h, 6.0f);
+
+        // Ombre portée sous le switch s'il est relevé
+        if (!isDown)
+        {
+            g.setColour (juce::Colour (0x7F000000));
+            g.fillRoundedRectangle (0.0f, 3.0f, w, h - 3.0f, 6.0f);
+        }
+
+        // Le corps principal du footswitch (qui s'enfonce)
+        juce::Rectangle<float> switchFace (0.0f, offset, w, h - 3.0f);
+        juce::Colour pedalBlue = juce::Colour (0xFF1E2D42);
+        juce::Colour pedalBlueLight = juce::Colour (0xFF263954);
+        
+        g.setGradientFill (juce::ColourGradient::vertical (pedalBlueLight, switchFace.getY(), pedalBlue, switchFace.getBottom()));
+        g.fillRoundedRectangle (switchFace, 6.0f);
+
+        // Effet d'assombrissement si enfoncé
+        if (isDown)
+        {
+            g.setColour (juce::Colours::black.withAlpha (0.25f));
+            g.fillRoundedRectangle (switchFace, 6.0f);
+        }
+
+        // Bordure en plastique noir du footswitch
+        g.setColour (juce::Colour (0xFF0E141D));
+        g.drawRoundedRectangle (switchFace, 6.0f, 2.0f);
+
+        // Plaque de protection en caoutchouc antidérapant (Rubber Pad)
+        juce::Rectangle<float> rubberPad (10.0f, switchFace.getY() + 10.0f, w - 20.0f, h - 65.0f);
+        juce::Colour rubberGrey = juce::Colour (0xFF17171A);
+        juce::Colour rubberBlack = juce::Colour (0xFF0A0A0B);
+        g.setGradientFill (juce::ColourGradient::vertical (rubberGrey, rubberPad.getY(), rubberBlack, rubberPad.getBottom()));
+        g.fillRoundedRectangle (rubberPad, 4.0f);
+
+        if (isDown)
+        {
+            g.setColour (juce::Colours::black.withAlpha (0.15f));
+            g.fillRoundedRectangle (rubberPad, 4.0f);
+        }
+
+        // Rainures horizontales sur le caoutchouc antidérapant
+        g.setColour (juce::Colour (0xFF050506));
+        float rubberStep = rubberPad.getHeight() / 10.0f;
+        for (int i = 1; i < 10; ++i)
+        {
+            float ry = rubberPad.getY() + static_cast<float> (i) * rubberStep;
+            g.drawHorizontalLine (static_cast<int> (ry), rubberPad.getX() + 4.0f, rubberPad.getRight() - 4.0f);
+        }
+
+        // Texte sur la pédale de commutation
+        g.setColour (juce::Colours::white);
+        g.setFont (juce::Font (juce::FontOptions ("Arial", 12.0f, juce::Font::bold)));
+        g.drawText ("PRESS PEDAL TO LOOP", rubberPad.withY (rubberPad.getY() + 35.0f).withHeight (25.0f), juce::Justification::centred);
+
+        g.setFont (juce::Font (juce::FontOptions ("Arial", 18.0f, juce::Font::bold)));
+        g.drawText ("HOLD", rubberPad.withY (rubberPad.getY() + 65.0f).withHeight (30.0f), juce::Justification::centred);
+
+        // Vis de serrage argentée au bas du footswitch (Boss Screw)
+        float screwX = w * 0.5f;
+        float screwY = switchFace.getBottom() - 22.0f;
+
+        // 1. Cavité extérieure (Trou dans le métal)
+        g.setColour (juce::Colour (0xFF080809));
+        g.fillEllipse (screwX - 11.0f, screwY - 11.0f, 22.0f, 22.0f);
+
+        // 2. Corps de la vis métallique argentée
+        juce::Colour screwLight = juce::Colour (0xFFCCCCCC);
+        juce::Colour screwDark = juce::Colour (0xFF555555);
+        g.setGradientFill (juce::ColourGradient::vertical (screwLight, screwY - 9.0f, screwDark, screwY + 9.0f));
+        g.fillEllipse (screwX - 9.0f, screwY - 9.0f, 18.0f, 18.0f);
+
+        // 3. Fente de tournevis au centre de la vis
+        g.setColour (juce::Colour (0xFF1A1A1A));
+        g.fillRect (screwX - 6.0f, screwY - 1.5f, 12.0f, 3.0f);
+        g.fillRect (screwX - 1.5f, screwY - 6.0f, 3.0f, 12.0f);
+
+        // 4. Ombre intérieure (Inner Shadow) pour l'effet de renfoncement 3D dans le boîtier
+        juce::ColourGradient innerShadow (juce::Colours::black.withAlpha (0.6f), screwX - 9.0f, screwY - 9.0f,
+                                          juce::Colours::transparentBlack, screwX + 2.0f, screwY + 2.0f, true);
+        g.setGradientFill (innerShadow);
+        g.fillEllipse (screwX - 9.0f, screwY - 9.0f, 18.0f, 18.0f);
+
+        // 5. Bordure de la cavité / Rondelle en caoutchouc noir
+        g.setColour (juce::Colour (0xFF020203));
+        g.drawEllipse (screwX - 11.0f, screwY - 11.0f, 22.0f, 22.0f, 1.2f);
+        g.drawEllipse (screwX - 9.0f, screwY - 9.0f, 18.0f, 18.0f, 0.8f);
+    }
+    else if (button.getName() == "SavePreset" || button.getName() == "DeletePreset")
+    {
+        auto bounds = button.getLocalBounds().toFloat();
+        juce::Colour fillColour = juce::Colours::transparentBlack;
+        juce::Colour borderColour = juce::Colour (0x33FFFFFF);
+        
+        if (shouldDrawButtonAsDown)
+        {
+            fillColour = juce::Colours::white.withAlpha (0.15f);
+            borderColour = juce::Colours::white.withAlpha (0.6f);
+        }
+        else if (shouldDrawButtonAsHighlighted)
+        {
+            fillColour = juce::Colours::white.withAlpha (0.08f);
+            borderColour = juce::Colours::white.withAlpha (0.4f);
+        }
+        
+        g.setColour (fillColour);
+        g.fillRoundedRectangle (bounds, 3.0f);
+        
+        g.setColour (borderColour);
+        g.drawRoundedRectangle (bounds, 3.0f, 1.0f);
+    }
+}
+
+juce::Font LeaderLookAndFeel::getTextButtonFont (juce::TextButton& button, int buttonHeight)
+{
+    juce::ignoreUnused (buttonHeight);
+    if (button.getName() == "SavePreset" || button.getName() == "DeletePreset")
+    {
+        return juce::Font (juce::FontOptions ("Arial", 10.0f, juce::Font::bold));
+    }
+    return juce::Font (juce::FontOptions ("Arial", 12.0f, juce::Font::bold));
 }
 
 // ==============================================================================
@@ -92,7 +230,7 @@ DD2AudioProcessorEditor::DD2AudioProcessorEditor (DD2AudioProcessor& p)
     setSize (400, 550);
 
     // Application du Look and Feel personnalisé aux potentiomètres
-    setLookAndFeel (&bossLookAndFeel);
+    setLookAndFeel (&leaderLookAndFeel);
 
     // --- Configuration du curseur E.LEVEL ---
     elevelSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
@@ -101,7 +239,7 @@ DD2AudioProcessorEditor::DD2AudioProcessorEditor (DD2AudioProcessor& p)
     addAndMakeVisible (elevelSlider);
 
     elevelLabel.setText ("E.LEVEL", juce::dontSendNotification);
-    elevelLabel.setFont (juce::Font (juce::FontOptions ("Arial", 11.0f, juce::Font::bold)));
+    elevelLabel.setFont (juce::Font (juce::FontOptions ("Arial", 10.0f, juce::Font::bold)));
     elevelLabel.setJustificationType (juce::Justification::centred);
     elevelLabel.setColour (juce::Label::textColourId, juce::Colour (0xFFD1D5DB));
     addAndMakeVisible (elevelLabel);
@@ -113,7 +251,7 @@ DD2AudioProcessorEditor::DD2AudioProcessorEditor (DD2AudioProcessor& p)
     addAndMakeVisible (feedbackSlider);
 
     feedbackLabel.setText ("F.BACK", juce::dontSendNotification);
-    feedbackLabel.setFont (juce::Font (juce::FontOptions ("Arial", 11.0f, juce::Font::bold)));
+    feedbackLabel.setFont (juce::Font (juce::FontOptions ("Arial", 10.0f, juce::Font::bold)));
     feedbackLabel.setJustificationType (juce::Justification::centred);
     feedbackLabel.setColour (juce::Label::textColourId, juce::Colour (0xFFD1D5DB));
     addAndMakeVisible (feedbackLabel);
@@ -125,7 +263,7 @@ DD2AudioProcessorEditor::DD2AudioProcessorEditor (DD2AudioProcessor& p)
     addAndMakeVisible (dtimeSlider);
 
     dtimeLabel.setText ("D.TIME", juce::dontSendNotification);
-    dtimeLabel.setFont (juce::Font (juce::FontOptions ("Arial", 11.0f, juce::Font::bold)));
+    dtimeLabel.setFont (juce::Font (juce::FontOptions ("Arial", 10.0f, juce::Font::bold)));
     dtimeLabel.setJustificationType (juce::Justification::centred);
     dtimeLabel.setColour (juce::Label::textColourId, juce::Colour (0xFFD1D5DB));
     addAndMakeVisible (dtimeLabel);
@@ -136,24 +274,22 @@ DD2AudioProcessorEditor::DD2AudioProcessorEditor (DD2AudioProcessor& p)
     modeSlider.setRange (0, 3, 1);
     addAndMakeVisible (modeSlider);
 
-    modeLabel.setText ("MODE", juce::dontSendNotification);
-    modeLabel.setFont (juce::Font (juce::FontOptions ("Arial", 11.0f, juce::Font::bold)));
+    modeLabel.setText ("MODE / RANGE", juce::dontSendNotification);
+    modeLabel.setFont (juce::Font (juce::FontOptions ("Arial", 10.0f, juce::Font::bold)));
     modeLabel.setJustificationType (juce::Justification::centred);
     modeLabel.setColour (juce::Label::textColourId, juce::Colour (0xFFD1D5DB));
     addAndMakeVisible (modeLabel);
 
     // --- Configuration du bouton Stomp Switch ---
-    // Le bouton lui-même est rendu cliquable mais invisible (opacité 0.0)
-    // car les graphismes physiques interactifs 3D sont dessinés dans paint()
+    stompSwitchButton.setName ("Footswitch");
+    stompSwitchButton.setButtonText ("");
     stompSwitchButton.setClickingTogglesState (true);
-    stompSwitchButton.setAlpha (0.0f);
     addAndMakeVisible (stompSwitchButton);
 
     // --- Configuration du Menu Déroulant des Presets ---
-    // Style rétro-industriel s'accordant avec l'esthétique Boss
-    presetComboBox.setColour (juce::ComboBox::backgroundColourId, juce::Colour (0xFF0E1A2B));
+    presetComboBox.setColour (juce::ComboBox::backgroundColourId, juce::Colour (0xFF2B3F5C));
     presetComboBox.setColour (juce::ComboBox::textColourId, juce::Colour (0xFFE5E7EB));
-    presetComboBox.setColour (juce::ComboBox::outlineColourId, juce::Colour (0xFF263954));
+    presetComboBox.setColour (juce::ComboBox::outlineColourId, juce::Colour (0xFF3A5478));
     presetComboBox.setColour (juce::ComboBox::arrowColourId, juce::Colour (0xFFF39C12));
     
     presetComboBox.onChange = [this]()
@@ -165,16 +301,18 @@ DD2AudioProcessorEditor::DD2AudioProcessorEditor (DD2AudioProcessor& p)
     addAndMakeVisible (presetComboBox);
 
     // Bouton de sauvegarde de preset
+    savePresetButton.setName ("SavePreset");
     savePresetButton.setButtonText ("SAVE");
-    savePresetButton.setColour (juce::TextButton::buttonColourId, juce::Colour (0xFF1F3556));
     savePresetButton.setColour (juce::TextButton::textColourOffId, juce::Colour (0xFFE5E7EB));
+    savePresetButton.setColour (juce::TextButton::textColourOnId, juce::Colours::white);
     savePresetButton.onClick = [this]() { saveUserPreset(); };
     addAndMakeVisible (savePresetButton);
 
     // Bouton de suppression de preset
+    deletePresetButton.setName ("DeletePreset");
     deletePresetButton.setButtonText ("DEL");
-    deletePresetButton.setColour (juce::TextButton::buttonColourId, juce::Colour (0xFF3A1212));
     deletePresetButton.setColour (juce::TextButton::textColourOffId, juce::Colour (0xFFE5E7EB));
+    deletePresetButton.setColour (juce::TextButton::textColourOnId, juce::Colours::white);
     deletePresetButton.onClick = [this]() { deleteUserPreset(); };
     addAndMakeVisible (deletePresetButton);
 
@@ -218,7 +356,7 @@ void DD2AudioProcessorEditor::paint (juce::Graphics& g)
     g.drawRect (juce::Rectangle<float> (1.0f, 1.0f, static_cast<float> (getWidth() - 2), static_cast<float> (getHeight() - 2)), 1.0f);
 
     // --- 2. Plaque de Contrôle supérieure en plastique bleu-roi ---
-    juce::Rectangle<float> controlPanel (15.0f, 60.0f, 370.0f, 120.0f);
+    juce::Rectangle<float> controlPanel (15.0f, 60.0f, 370.0f, 132.0f);
     juce::Colour panelBlue = juce::Colour (0xFF0E1A2B); // Plaque foncée
     juce::Colour panelBlueBorder = juce::Colour (0xFF2A4266);
     
@@ -227,158 +365,141 @@ void DD2AudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (panelBlueBorder);
     g.drawRoundedRectangle (controlPanel, 4.0f, 1.5f);
 
-    // Séparateurs blancs discrets entre les contrôles sur la plaque
-    g.setColour (juce::Colour (0x1FADCEF7));
+    // Séparateurs verticaux fins 3D ("bays") entre les contrôles sur la plaque
     float step = controlPanel.getWidth() / 4.0f;
     for (int i = 1; i < 4; ++i)
     {
         float splitX = controlPanel.getX() + static_cast<float> (i) * step;
-        g.drawVerticalLine (static_cast<int> (splitX), controlPanel.getY() + 3.0f, controlPanel.getBottom() - 3.0f);
+        // Ligne d'ombre
+        g.setColour (juce::Colour (0xFF080F1A));
+        g.drawVerticalLine (static_cast<int> (splitX), controlPanel.getY() + 2.0f, controlPanel.getBottom() - 2.0f);
+        // Ligne de lumière
+        g.setColour (juce::Colour (0xFF263E61));
+        g.drawVerticalLine (static_cast<int> (splitX) + 1, controlPanel.getY() + 2.0f, controlPanel.getBottom() - 2.0f);
     }
 
     // --- 3. Bandeau Sérigraphié Inférieur sur la plaque de contrôle ---
-    juce::Rectangle<float> stripeRect (16.0f, 150.0f, 368.0f, 28.0f);
+    juce::Rectangle<float> stripeRect (16.0f, 150.0f, 368.0f, 40.0f);
     g.setColour (juce::Colour (0xFF1F3556)); // Bandeau bleu plus clair
     g.fillRect (stripeRect);
     
     g.setColour (juce::Colour (0xFF3A5885));
     g.drawHorizontalLine (150, 16.0f, 384.0f);
 
-    // --- 4. Rendu de la LED d'état Rouge animée ---
+    // --- 4. Rendu de la LED d'état Rouge animée (CHECK) ---
     float ledX = 200.0f;
-    float ledY = 32.0f;
+    float ledY = 30.0f;
 
-    // Bezel métallique extérieur argenté
-    g.setColour (juce::Colour (0xFF9E9E9E));
-    g.drawEllipse (ledX - 9.0f, ledY - 9.0f, 18.0f, 18.0f, 2.0f);
-    g.setColour (juce::Colour (0xFF4A4A4A));
-    g.drawEllipse (ledX - 7.5f, ledY - 7.5f, 15.0f, 15.0f, 1.0f);
+    // Bezel chrome externe
+    juce::Path chromeBezel;
+    chromeBezel.addCentredArc (ledX, ledY, 8.0f, 8.0f, 0.0f, 0.0f, juce::MathConstants<float>::twoPi, true);
+    juce::ColourGradient chromeGrad (juce::Colours::white, ledX - 6.0f, ledY - 6.0f,
+                                     juce::Colour (0xFF666666), ledX + 6.0f, ledY + 6.0f, false);
+    g.setGradientFill (chromeGrad);
+    g.fillPath (chromeBezel);
+    
+    // Bordure argentée pour faire ressortir le chrome
+    g.setColour (juce::Colour (0xFF999999));
+    g.drawEllipse (ledX - 8.0f, ledY - 8.0f, 16.0f, 16.0f, 1.5f);
+
+    // Anneau de caoutchouc intérieur sombre
+    g.setColour (juce::Colour (0xFF111111));
+    g.fillEllipse (ledX - 5.5f, ledY - 5.5f, 11.0f, 11.0f);
 
     // Couleur dynamique de la LED en fonction de l'oscillation et de l'état HOLD
     juce::Colour ledColor;
     if (isHoldActive)
     {
-        // En mode HOLD actif : LED rouge brillant à intensité maximale
         ledColor = juce::Colour::fromFloatRGBA (1.0f, 0.05f, 0.05f, 1.0f);
     }
     else
     {
-        // En mode normal : la LED palpite doucement au rythme du delay
         ledColor = juce::Colour::fromFloatRGBA (0.2f + 0.8f * ledBrightness, 0.0f, 0.0f, 1.0f);
     }
 
-    // Cœur de la LED
     g.setColour (ledColor);
-    g.fillEllipse (ledX - 5.0f, ledY - 5.0f, 10.0f, 10.0f);
+    g.fillEllipse (ledX - 4.0f, ledY - 4.0f, 8.0f, 8.0f);
 
-    // Halo lumineux/Glow réaliste si la LED est allumée
+    // Halo lumineux / Glow
     if (ledBrightness > 0.05f || isHoldActive)
     {
-        float currentHalo = 12.0f * (isHoldActive ? 1.0f : ledBrightness);
-        juce::ColourGradient glow (ledColor.withAlpha (0.45f * (isHoldActive ? 1.0f : ledBrightness)), ledX, ledY,
+        float currentHalo = 14.0f * (isHoldActive ? 1.0f : ledBrightness);
+        juce::ColourGradient glow (ledColor.withAlpha (0.4f * (isHoldActive ? 1.0f : ledBrightness)), ledX, ledY,
                                    juce::Colours::transparentBlack, ledX + currentHalo, ledY + currentHalo, true);
         g.setGradientFill (glow);
         g.fillEllipse (ledX - currentHalo, ledY - currentHalo, currentHalo * 2.0f, currentHalo * 2.0f);
 
-        // Petit point de brillance spéculaire
+        // Point brillant spéculaire
         g.setColour (juce::Colour (0xCCFFFFFF));
-        g.fillEllipse (ledX - 2.0f, ledY - 2.5f, 2.0f, 2.0f);
+        g.fillEllipse (ledX - 1.5f, ledY - 2.0f, 1.5f, 1.5f);
     }
 
-    // --- 5. Textes et Logos Rétro Industriels ---
     // Étiquette "CHECK" pour la LED
     g.setColour (juce::Colour (0xFFE5E7EB));
     g.setFont (juce::Font (juce::FontOptions ("Arial", 9.0f, juce::Font::bold)));
-    g.drawText ("CHECK", 150, 10, 100, 12, juce::Justification::centred);
+    g.drawText ("CHECK", 150, 6, 100, 12, juce::Justification::centred);
 
-    // Logo Géant "LEADER" (Synonyme de BOSS/Pionnier pour éviter les droits d'auteur)
+    // --- 5. Graduations autour du bouton MODE (4 positions) ---
+    float modeCx = 337.5f;
+    float modeCy = 108.0f;
+    float startAngle = 1.25f * juce::MathConstants<float>::pi; // 225 deg (Bottom-Left)
+    float endAngle = 2.75f * juce::MathConstants<float>::pi;   // 135 deg (Bottom-Right)
+
+    // Petit cercle de repère orange pour chaque position
+    g.setColour (juce::Colour (0xFFF39C12)); // Orange Boss
+    float tickRadius = 26.0f;
+    for (int i = 0; i < 4; ++i)
+    {
+        float angle = startAngle + (static_cast<float> (i) / 3.0f) * (endAngle - startAngle);
+        float tx = modeCx + tickRadius * std::sin (angle);
+        float ty = modeCy - tickRadius * std::cos (angle);
+        g.fillEllipse (tx - 1.5f, ty - 1.5f, 3.0f, 3.0f);
+    }
+
+    // On dessine les textes dans des zones rectangulaires fixes et compactes pour éviter les chevauchements
+    g.setFont (juce::Font (juce::FontOptions ("Arial", 7.5f, juce::Font::bold)));
+    g.setColour (juce::Colour (0xFFD1D5DB));
+
+    // Position 0 : 12.5-50 (Bottom-Left)
+    g.drawText ("12.5-50", 285, 133, 32, 10, juce::Justification::centredRight);
+    
+    // Position 1 : 50-200 (Top-Left)
+    g.drawText ("50-200", 285, 73, 32, 10, juce::Justification::centredRight);
+
+    // Position 2 : 200-800 (Top-Right)
+    g.drawText ("200-800", 358, 73, 32, 10, juce::Justification::centredLeft);
+
+    // Position 3 : HOLD (Bottom-Right)
+    g.drawText ("HOLD", 358, 133, 32, 10, juce::Justification::centredLeft);
+
+
+    // Affichage textuel dynamique du mode actif sous le bouton MODE
+    int activeMode = static_cast<int> (modeSlider.getValue());
+    juce::String modeString;
+    if (activeMode == 0)      modeString = "Short Delay";
+    else if (activeMode == 1) modeString = "Medium Delay";
+    else if (activeMode == 2) modeString = "Long Delay";
+    else if (activeMode == 3) modeString = "HOLD Loop";
+
+    g.setColour (juce::Colour (0xFFF39C12)); // Orange
+    g.setFont (juce::Font (juce::FontOptions ("Arial", 9.5f, juce::Font::bold)));
+    g.drawText (modeString, 299, 172, 76, 14, juce::Justification::centred);
+
+    // --- 6. Textes et Logos Rétro Industriels au centre ---
+    // Logo Géant "LEADER"
     g.setColour (juce::Colours::white);
-    g.setFont (juce::Font (juce::FontOptions ("Arial Unicode MS", 36.0f, juce::Font::bold | juce::Font::italic)));
-    g.drawText ("LEADER", 35, 205, 180, 45, juce::Justification::left);
+    g.setFont (juce::Font (juce::FontOptions ("Arial Black", 38.0f, juce::Font::bold | juce::Font::italic)));
+    g.drawText ("LEADER", 35, 205, 200, 50, juce::Justification::left);
 
-    // Logo du modèle "Digital Delay DD-2"
-    g.setColour (juce::Colour (0xFFF39C12)); // Couleur orange Boss classique
+    // Logo du modèle "Digital Delay" en orange Boss classique
+    g.setColour (juce::Colour (0xFFF39C12));
     g.setFont (juce::Font (juce::FontOptions ("Arial", 16.0f, juce::Font::bold)));
-    g.drawText ("Digital Delay", 35, 252, 250, 22, juce::Justification::left);
+    g.drawText ("Digital Delay", 35, 255, 250, 22, juce::Justification::left);
 
-    g.setFont (juce::Font (juce::FontOptions ("Arial", 22.0f, juce::Font::bold)));
-    g.drawText ("DD-2", 35, 274, 150, 26, juce::Justification::left);
-
-    // --- 6. Rendu interactif du Commutateur de pied (Footswitch) ---
-    bool isDown = stompSwitchButton.isDown();
-    
-    // Décalage visuel en pixel pour un enfoncement 3D saisissant
-    float offset = isDown ? 3.0f : 0.0f;
-
-    // Rectangle du châssis de la pédale inférieure
-    juce::Rectangle<float> switchBase (25.0f, 315.0f, 350.0f, 215.0f);
-    
-    // Fond métallique sombre du footswitch mobile
-    g.setColour (juce::Colour (0xFF162130));
-    g.fillRoundedRectangle (switchBase, 6.0f);
-
-    // Ombre portée sous le switch s'il est relevé
-    if (!isDown)
-    {
-        g.setColour (juce::Colour (0x7F000000));
-        g.fillRoundedRectangle (switchBase.getX(), switchBase.getY() + 3.0f, switchBase.getWidth(), switchBase.getHeight(), 6.0f);
-    }
-
-    // Le corps principal du footswitch (qui s'enfonce)
-    juce::Rectangle<float> switchFace = switchBase.translated (0.0f, offset);
-    g.setGradientFill (juce::ColourGradient::vertical (pedalBlueLight, switchFace.getY(), pedalBlue, switchFace.getBottom()));
-    g.fillRoundedRectangle (switchFace, 6.0f);
-
-    // Bordure en plastique noir du footswitch
-    g.setColour (juce::Colour (0xFF0E141D));
-    g.drawRoundedRectangle (switchFace, 6.0f, 2.0f);
-
-    // Plaque de protection en caoutchouc antidérapant (Rubber Pad)
-    juce::Rectangle<float> rubberPad (35.0f + 1.0f, switchFace.getY() + 10.0f, 330.0f, 155.0f);
-    juce::Colour rubberGrey = juce::Colour (0xFF17171A);
-    juce::Colour rubberBlack = juce::Colour (0xFF0A0A0B);
-    g.setGradientFill (juce::ColourGradient::vertical (rubberGrey, rubberPad.getY(), rubberBlack, rubberPad.getBottom()));
-    g.fillRoundedRectangle (rubberPad, 4.0f);
-
-    // Rainures horizontales sur le caoutchouc antidérapant
-    g.setColour (juce::Colour (0xFF050506));
-    float rubberStep = rubberPad.getHeight() / 10.0f;
-    for (int i = 1; i < 10; ++i)
-    {
-        float ry = rubberPad.getY() + static_cast<float> (i) * rubberStep;
-        g.drawHorizontalLine (static_cast<int> (ry), rubberPad.getX() + 4.0f, rubberPad.getRight() - 4.0f);
-    }
-
-    // Texte sur la pédale de commutation
+    // "DD-2" en gras blanc sous "Digital Delay"
     g.setColour (juce::Colours::white);
-    g.setFont (juce::Font (juce::FontOptions ("Arial", 12.0f, juce::Font::bold)));
-    g.drawText ("PRESS PEDAL TO LOOP", rubberPad.withY (rubberPad.getY() + 35.0f).withHeight (25.0f), juce::Justification::centred);
-
-    g.setFont (juce::Font (juce::FontOptions ("Arial", 18.0f, juce::Font::bold)));
-    g.drawText ("HOLD", rubberPad.withY (rubberPad.getY() + 65.0f).withHeight (30.0f), juce::Justification::centred);
-
-    // Vis de serrage argentée au bas du footswitch (Boss Screw)
-    float screwX = 200.0f;
-    float screwY = switchFace.getBottom() - 25.0f;
-
-    // Encoche extérieure noire de la vis
-    g.setColour (juce::Colour (0xFF0E0E10));
-    g.fillEllipse (screwX - 11.0f, screwY - 11.0f, 22.0f, 22.0f);
-
-    // Corps de la vis métallique argentée striée
-    juce::Colour screwLight = juce::Colour (0xFFCCCCCC);
-    juce::Colour screwDark = juce::Colour (0xFF555555);
-    g.setGradientFill (juce::ColourGradient::vertical (screwLight, screwY - 9.0f, screwDark, screwY + 9.0f));
-    g.fillEllipse (screwX - 9.0f, screwY - 9.0f, 18.0f, 18.0f);
-
-    // Fente de tournevis au centre de la vis
-    g.setColour (juce::Colour (0xFF1A1A1A));
-    g.fillRect (screwX - 6.0f, screwY - 1.5f, 12.0f, 3.0f);
-    g.fillRect (screwX - 1.5f, screwY - 6.0f, 3.0f, 12.0f);
-
-    // Rondelle en caoutchouc noir sous la vis
-    g.setColour (juce::Colour (0xFF000000));
-    g.drawEllipse (screwX - 9.0f, screwY - 9.0f, 18.0f, 18.0f, 1.2f);
+    g.setFont (juce::Font (juce::FontOptions ("Arial Black", 24.0f, juce::Font::bold)));
+    g.drawText ("DD-2", 35, 277, 150, 30, juce::Justification::left);
 }
 
 // ==============================================================================
@@ -410,13 +531,13 @@ void DD2AudioProcessorEditor::resized()
     modeSlider.setBounds (static_cast<int> (startX + 3.0f * stepWidth), 70, static_cast<int> (sliderWidth), static_cast<int> (sliderHeight));
     modeLabel.setBounds (static_cast<int> (startX + 3.0f * stepWidth - 2.0f), 154, static_cast<int> (sliderWidth + 4.0f), static_cast<int> (labelHeight));
 
-    // Le bouton stomp switch invisible couvre toute la zone physique du footswitch inférieur
+    // Le bouton stomp switch couvre toute la zone physique du footswitch inférieur
     stompSwitchButton.setBounds (25, 315, 350, 215);
 
     // Positionnement des contrôles de presets (Gauche et Droite) pour laisser la LED centrale visible
-    presetComboBox.setBounds (15, 18, 135, 24);
-    savePresetButton.setBounds (265, 18, 55, 24);
-    deletePresetButton.setBounds (328, 18, 55, 24);
+    presetComboBox.setBounds (15, 18, 120, 24);
+    savePresetButton.setBounds (275, 18, 50, 24);
+    deletePresetButton.setBounds (335, 18, 50, 24);
 }
 
 // ==============================================================================
